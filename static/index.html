@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>OCR App</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <style>
+        .container {
+            margin-top: 50px;
+        }
+
+        #image-preview {
+            max-width: 300px;
+            max-height: 300px;
+            margin-top: 20px;
+        }
+
+        #output {
+            height: 200px;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <h1>OCR My Image</h1>
+        <div class="grid">
+            <label for="image-upload">Upload Image:
+                <input type="file" class="form-control-file" id="image-upload" accept="image/*"
+                    onchange="previewImage(event)">
+            </label>
+            <label for="language"> Language:
+                <input type="text" id="language" name="language" placeholder="language" required>
+            </label>
+        </div>
+        <div class="grid">
+            <div>
+                <img id="image-preview" src="#" alt="Image preview will appear here">
+            </div>
+            <div class="mt-4">
+                <label for="output">Output:</label>
+                <textarea id="output" class="form-control" readonly placeholder="OCR text from image will appear here"></textarea>
+            </div>
+        </div>
+        
+
+        <button class="btn btn-primary btn-block mt-4" onclick="uploadImage()">Upload</button>
+
+        
+    </main>
+
+    <script>
+        var previewedFile;
+
+        function previewImage(event) {
+            var input = event.target;
+            var reader = new FileReader();
+
+            reader.onload = function () {
+                var img = document.getElementById("image-preview");
+                img.src = reader.result;
+            };
+
+            previewedFile = input.files[0];
+            reader.readAsDataURL(previewedFile);
+        }
+
+        function uploadImage() {
+            if (!previewedFile) {
+                alert("Please select an image.");
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append("image", previewedFile);
+            formData.append("language", document.getElementById("language").value)
+
+            // Make an API call to upload the image and receive the JSON response
+            // Replace 'API_ENDPOINT' with your actual API endpoint URL
+            fetch('http://localhost:8080/upload', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Update the output textarea with the JSON response
+                    document.getElementById("output").value = JSON.stringify(data.text, null, 2);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        // Handle Ctrl+V to accept image from clipboard
+        document.addEventListener("paste", function (event) {
+            var items = event.clipboardData.items;
+
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf("image") !== -1) {
+                    var file = items[i].getAsFile();
+
+                    var reader = new FileReader();
+
+                    reader.onload = function () {
+                        var img = document.getElementById("image-preview");
+                        img.src = reader.result;
+
+                        previewedFile = file;
+                    };
+
+                    reader.readAsDataURL(file);
+                }
+            }
+        });
+    </script>
+
+
+</body>
+
+</html>
