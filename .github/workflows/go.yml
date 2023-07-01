@@ -36,7 +36,7 @@ jobs:
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v3.1.2
       with:
-        path: linux-ocrmyimage-amd64
+        path: ocrmyimage
         # The desired behavior if no files are found using the provided path.
     
     - name: 'Get Previous tag'
@@ -49,6 +49,6 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{steps.previous_tag.outputs.tag}}
-        files: linux-ocrmyimage-amd64
+        files: ocrmyimage
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
