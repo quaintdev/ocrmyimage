@@ -16,6 +16,14 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Install Package
+      # You may pin to the exact commit or the version.
+      # uses: ConorMacBride/install-package@3e7ad059e07782ee54fa35f827df52aae0626f30
+      uses: ConorMacBride/install-package@v1.1.0
+      with:
+        # Packages to install with apt on Linux
+        apt: tesseract-ocr, libtesseract-dev
+
     - name: Set up Go
       uses: actions/setup-go@v3
       with:
