@@ -27,4 +27,6 @@ You can view installed languages using `tesseract --list-langs`
 
 ## Install OCR My Image
 
-Use `go install github.com/quaintdev/ocrmyimage@latest` to install the web server or download binary from release pages and execute it.
+Use `go install github.com/quaintdev/ocrmyimage@latest` to install the web server on your platform.
+
+If you are on Linux (amd64) you can use pre-built binary from release pages and execute it.
