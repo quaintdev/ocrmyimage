@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html data-theme="auto">
 
 <head>
     <title>OCR App</title>
@@ -23,34 +23,49 @@
 
 <body>
     <main class="container">
-        <h1>OCR My Image</h1>
+        <hgroup>
+            <h1>OCR My Image</h1>
+            <h3>A web frontend for tesseract-ocr</h3>
+        </hgroup>
+        
+        
         <div class="grid">
-            <label for="image-upload">Upload Image:
+            <label for="image-upload">Upload Image or use Ctrl+v to paste copied image:
                 <input type="file" class="form-control-file" id="image-upload" accept="image/*"
                     onchange="previewImage(event)">
             </label>
             <label for="language"> Language:
-                <input type="text" id="language" name="language" placeholder="language" required>
+                <input type="text" id="language" name="language" required value="eng">
             </label>
         </div>
+        
         <div class="grid">
             <div>
                 <img id="image-preview" src="#" alt="Image preview will appear here">
             </div>
             <div class="mt-4">
                 <label for="output">Output:</label>
-                <textarea id="output" class="form-control" readonly placeholder="OCR text from image will appear here"></textarea>
+                <textarea id="output" class="form-control" readonly
+                    placeholder="OCR text from image will appear here"></textarea>
             </div>
         </div>
-        
 
-        <button class="btn btn-primary btn-block mt-4" onclick="uploadImage()">Upload</button>
-
-        
+        <div class="grid">
+            <button onclick="clearPage()">Clear</button>
+            <button onclick="uploadImage()">Upload</button>
+            <button onclick="copyToClipboard()">Copy</button>
+        </div>
     </main>
 
     <script>
         var previewedFile;
+
+        function clearPage() {
+            var textarea = document.getElementById('output');
+            textarea.value="";
+            var img = document.getElementById("image-preview");
+            img.src = "";
+        }
 
         function previewImage(event) {
             var input = event.target;
@@ -63,6 +78,13 @@
 
             previewedFile = input.files[0];
             reader.readAsDataURL(previewedFile);
+        }
+
+        function removeQuotationMarks(jsonString) {
+            if (jsonString.startsWith('"') && jsonString.endsWith('"')) {
+                return jsonString.slice(1, -1);
+            }
+            return jsonString;
         }
 
         function uploadImage() {
@@ -83,13 +105,21 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    // Update the output textarea with the JSON response
-                    document.getElementById("output").value = JSON.stringify(data.text, null, 2);
+                    var convString = JSON.stringify(data.text, null, 2);
+                    convString = removeQuotationMarks(convString);
+                    document.getElementById("output").value = convString
                 })
                 .catch(error => {
                     console.error('Error:', error);
                 });
         }
+
+        function copyToClipboard() {
+            var textarea = document.getElementById('output');
+            textarea.select();
+            document.execCommand('copy');
+        }
+
 
         // Handle Ctrl+V to accept image from clipboard
         document.addEventListener("paste", function (event) {
@@ -113,8 +143,6 @@
             }
         });
     </script>
-
-
 </body>
 
 </html>

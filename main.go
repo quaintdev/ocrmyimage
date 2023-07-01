@@ -51,7 +51,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	client.SetImage(tempFile.Name())
 	text, _ := client.Text()
 
-	text = strings.ReplaceAll(text, "\n", "")
+	text = strings.ReplaceAll(text, "\n", " ")
 
 	// Create a struct to hold the OCR output
 	type OCRResult struct {
@@ -70,3 +70,5 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+//TODO set default language to en
