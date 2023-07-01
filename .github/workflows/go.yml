@@ -22,7 +22,7 @@ jobs:
       uses: ConorMacBride/install-package@v1.1.0
       with:
         # Packages to install with apt on Linux
-        apt: tesseract-ocr, libtesseract-dev
+        apt: tesseract-ocr libtesseract-dev
 
     - name: Set up Go
       uses: actions/setup-go@v3
