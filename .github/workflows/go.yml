@@ -38,9 +38,16 @@ jobs:
         path: ocrmyimage
         # The desired behavior if no files are found using the provided path.
     
+    - name: 'Get Previous tag'
+      id: previous_tag
+      uses: "WyriHaximus/github-action-get-previous-tag@v1"
+      with:
+        fallback: v1.0
+    
     - name: Release with Notes
       uses: softprops/action-gh-release@v1
       with:
+        tag_name: ${{steps.previous_tag.outputs.tag}}
         files: ocrmyimage
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
