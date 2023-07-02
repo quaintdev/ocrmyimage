@@ -27,29 +27,20 @@
             <h1>OCR My Image</h1>
             <h3>A web frontend for tesseract-ocr</h3>
         </hgroup>
-        
-        
         <div class="grid">
-            <label for="image-upload">Upload Image or use Ctrl+v to paste copied image:
-                <input type="file" class="form-control-file" id="image-upload" accept="image/*"
-                    onchange="previewImage(event)">
+            <label for="image-upload">Upload Images or use Ctrl+v to paste copied images:
+                <input type="file" class="form-control-file" id="image-upload" accept="image/*" multiple>
             </label>
             <label for="language"> Language:
                 <input type="text" id="language" name="language" required value="eng">
             </label>
         </div>
-        
-        <div class="grid">
-            <div>
-                <img id="image-preview" src="#" alt="Image preview">
-            </div>
-            <div class="mt-4">
-                <label for="output">Output:</label>
-                <textarea id="output" class="form-control" readonly
-                    placeholder="OCR text from image will appear here"></textarea>
-            </div>
+        <div id="preview-container"></div>
+        <div>
+            <label for="output">Output:</label>
+            <textarea id="output" class="form-control" readonly
+                placeholder="OCR text from images will appear here"></textarea>
         </div>
-
         <div class="grid">
             <button onclick="clearPage()">Clear</button>
             <button onclick="uploadImage()">Process</button>
@@ -58,26 +49,40 @@
     </main>
 
     <script>
-        var previewedFile;
+        var previewedFiles = [];
 
         function clearPage() {
             var textarea = document.getElementById('output');
-            textarea.value="";
-            var img = document.getElementById("image-preview");
-            img.src = "";
+            textarea.value = "";
+            var previewContainer = document.getElementById("preview-container");
+            previewContainer.innerHTML = "";
+            var uploadImage = document.getElementById("image-upload")
+            uploadImage.value = "";
         }
 
-        function previewImage(event) {
+        function previewImages(event) {
             var input = event.target;
-            var reader = new FileReader();
+            var reader;
+            var previewContainer = document.getElementById("preview-container");
+            previewContainer.innerHTML = "";
 
-            reader.onload = function () {
-                var img = document.getElementById("image-preview");
-                img.src = reader.result;
-            };
+            for (var i = 0; i < input.files.length; i++) {
+                reader = new FileReader();
 
-            previewedFile = input.files[0];
-            reader.readAsDataURL(previewedFile);
+                reader.onload = function (index) {
+                    return function () {
+                        var img = document.createElement("img");
+                        img.src = reader.result;
+                        img.alt = "Image preview";
+                        img.style.maxWidth = "300px";
+                        img.style.maxHeight = "300px";
+                        img.style.marginTop = "20px";
+                        previewContainer.appendChild(img);
+                        previewedFiles[index] = input.files[index];
+                    };
+                }(i);
+                reader.readAsDataURL(input.files[i]);
+            }
         }
 
         function removeQuotationMarks(jsonString) {
@@ -88,14 +93,16 @@
         }
 
         function uploadImage() {
-            if (!previewedFile) {
+            if (!previewedFiles) {
                 alert("Please select an image.");
                 return;
             }
 
             var formData = new FormData();
-            formData.append("image", previewedFile);
-            formData.append("language", document.getElementById("language").value)
+            for (var i = 0; i < previewedFiles.length; i++) {
+                formData.append("images[]", previewedFiles[i]);
+            }
+            formData.append("language", document.getElementById("language").value);
 
             // Make an API call to upload the image and receive the JSON response
             // Replace 'API_ENDPOINT' with your actual API endpoint URL
@@ -105,9 +112,14 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    var convString = JSON.stringify(data.text, null, 2);
-                    convString = removeQuotationMarks(convString);
-                    document.getElementById("output").value = convString
+                    outputText = ""
+                    for (var i = 0; i < data.texts.length; i++) {
+                        var convString = JSON.stringify(data.texts[i], null, 2);
+                        convString = removeQuotationMarks(convString);
+                        outputText = outputText + convString + "\n\n"
+                    }
+                    document.getElementById("output").value = outputText
+
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -120,10 +132,8 @@
             document.execCommand('copy');
         }
 
-
-        // Handle Ctrl+V to accept image from clipboard
         document.addEventListener("paste", function (event) {
-            var items = event.clipboardData.items;
+            var items = (event.clipboardData || event.originalEvent.clipboardData).items;
 
             for (var i = 0; i < items.length; i++) {
                 if (items[i].type.indexOf("image") !== -1) {
@@ -131,17 +141,26 @@
 
                     var reader = new FileReader();
 
-                    reader.onload = function () {
-                        var img = document.getElementById("image-preview");
-                        img.src = reader.result;
+                    reader.onload = function (file) {
+                        return function () {
+                            var img = document.createElement("img");
+                            img.src = reader.result;
+                            img.alt = "Image preview";
+                            img.style.maxWidth = "300px";
+                            img.style.maxHeight = "300px";
+                            img.style.marginTop = "20px";
+                            var previewContainer = document.getElementById("preview-container");
+                            previewContainer.appendChild(img);
 
-                        previewedFile = file;
-                    };
+                            previewedFiles.push(file);
+                        };
+                    }(file);
 
                     reader.readAsDataURL(file);
                 }
             }
         });
+
     </script>
 </body>
 
