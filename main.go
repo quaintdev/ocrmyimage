@@ -18,6 +18,7 @@ func main() {
 	http.Handle("/", fs)
 
 	http.HandleFunc("/upload", uploadHandler)
+	log.Println("Starting server on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 

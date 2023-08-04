@@ -38,7 +38,7 @@
         <div id="preview-container"></div>
         <div>
             <label for="output">Output:</label>
-            <textarea id="output" class="form-control" readonly
+            <textarea id="output" class="form-control" 
                 placeholder="OCR text from images will appear here"></textarea>
         </div>
         <div class="grid">
@@ -58,6 +58,7 @@
             previewContainer.innerHTML = "";
             var uploadImage = document.getElementById("image-upload")
             uploadImage.value = "";
+            previewedFiles = [];
         }
 
         function previewImages(event) {
